@@ -92,13 +92,24 @@ mod app
     {
         let mut usr_led = cx.resources.usr_led;
         let mut usr_btn = cx.resources.usr_btn;
-        
+        /*
+        //alternate "unlock" syntax using clone(). I prefer it!
+        //  see: https://github.com/TeXitoi/rusty-clock/blob/master/src/main.rs
+        //let led1 = cx.resources.usr_led.lock(|usr_led| usr_led.clone());
+        let led1 = cx.resources.usr_led.lock(|usr_led| usr_led);
+        led1.toggle();
+        //I really don't know how I'm _supposed_ to pass PINS into a RTIC fn
+        */
+
+        /*
+        //cannot figure out the ownership/mutability of this code
         usr_led.lock(|usr_led| {
             use stm32f4xx_hal::prelude::_embedded_hal_digital_v2_ToggleableOutputPin;
-            let tmp_led = *usr_led;
+            let tmp_led = &*usr_led;
             tmp_led.toggle();
         });
-
+        */
+        /*
         //Multi-lock SYNTAX... broken!
         (usr_led, usr_btn).lock(|usr_led, usr_btn| {
 
@@ -111,7 +122,9 @@ mod app
                 //cortex_m::asm::wfi();   //is this needed?
                 //delay.delay_ms(100u32);
             }
-        });    
+        });
+        */      
+        loop {}  
     }
 
 
@@ -120,22 +133,28 @@ mod app
         let mut exti = cx.resources.exti;
         let mut usr_led = cx.resources.usr_led;
         let mut usr_btn = cx.resources.usr_btn;        
-        (exti, usr_led, usr_btn).lock(|exti, usr_led, usr_btn| {
+        //multi-lock appears to be broken
+        //(exti, usr_led, usr_btn).lock(|exti, usr_led, usr_btn| {
+        exti.lock(|exti| {
             //refer to the resources as *exti, *usr_led, *usr_btn
-
             //check which interrupt fired
-            let val = *exti.pr.read().bits();
+            let val = exti.pr.read().bits();
             match val {
                 0x2000 => {
                     //0x2000 = bit 13 set
+                    //not using this at the moment
                 }
                 _ => rprintln!("another value of EXTI15_10 ;)"),
             }
-
-            //cx.resources.exti.pr.write(|w| w.pr13().set_bit()); // Clear interrupt
-            *usr_btn.clear_interrupt_pending_bit();
-            *usr_led.toggle().ok();
-
+         
+            //exti.pr.write(|w| w.pr13().set_bit()); // Clear interrupt, direct register manipulation
+            usr_btn.lock(|btn| {
+                (*btn).clear_interrupt_pending_bit(); //clear interrupt - HAL method
+            });
+            usr_led.lock(|led| {
+                use stm32f4xx_hal::prelude::_embedded_hal_digital_v2_ToggleableOutputPin;
+                (*led).toggle().ok();
+            });
         });
         
         
