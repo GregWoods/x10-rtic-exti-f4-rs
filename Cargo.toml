@@ -1,5 +1,5 @@
 [package]
-name = "x10-rtic-exti-f4-rs"
+name = "{{project-name}}"
 version = "0.1.0"
 authors = ["Roman Valls Guimera <brainstorm@nopcode.org>", "Josh Johnson"]
 edition = "2018"
