@@ -12,9 +12,9 @@ This is a template for your own README.
 * Install the very useful [GitHub cli](https://cli.github.com/)
 
 ```
-cargo generate --git https://github.com/GregWoods/x08-outputcompare-f4-rs.git --name x10-rtic-exti-f4-rs
-gh repo create x10-rtic-exti-f4-rs
-cd x10-rtic-exti-f4-rs
+cargo generate --git https://github.com/GregWoods/x08-outputcompare-f4-rs.git --name {{project-name}}
+gh repo create {{project-name}}
+cd {{project-name}}
 git add .
 git commit -m "generated from a template by https://github.com/GregWoods"
 git push -u origin master
